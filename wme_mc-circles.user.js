@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name         WME MC Circles
-// @description  Adds the ability to create Map Comments in Waze Map Editor as circles
+// @description  Adds the ability to create Map Comments in Waze Map Editor as a circle
 // @namespace    https://github.com/Dwinger2006/Dancingman81
-// @version      2024.10.12.04
+// @version      2024.10.13.01
 // @include      https://*.waze.com/editor*
-// @include      https://*.waze.com/*editor*
 // @grant        none
 // @author       Dancingman81
 // @license      MIT
 // @syncURL      https://github.com/Dwinger2006/WME_MC-Circle/raw/main/wme_mc-circles.user.js
-//
+// @downloadURL  https://github.com/Dwinger2006/WME_MC-Circle/raw/main/wme_mc-circles.user.js
+// @updateURL    https://github.com/Dwinger2006/WME_MC-Circle/raw/main/wme_mc-circles.meta.js
 // ==/UserScript==
 
 (function() {
@@ -39,35 +39,39 @@
     }
 
     // Function to add a button to the WME toolbar
-    function addButtonToToolbar() {
-        const toolbar = document.querySelector('.toolbar'); // Suche nach einem element mit der Klasse 'toolbar'
+    function addCircleButton() {
+        console.log("Adding Circle button");
+
+        var toolbar = document.querySelector('.WazeControlPermalink');
         if (!toolbar) {
             console.error('Toolbar not found');
             return;
         }
 
-        const button = document.createElement('button');
-        button.innerHTML = 'Add Circle';
-        button.style.marginLeft = '10px';
-        button.onclick = function() {
-            const center = { lon: 6.13, lat: 49.61 }; // Center coordinates of the circle
-            const radius = 100; // Radius in meters
+        var circle_btn = document.createElement('button');
+        circle_btn.style = "width: 100px;height: 24px; font-size:85%;color: blue;border-radius: 5px;border: 0.5px solid lightgrey; background: white; margin-left: 10px;";
+        circle_btn.innerHTML = "Add Circle";
+
+        circle_btn.addEventListener('click', function() {
+            console.log('Circle button clicked');
+            // Start circle creation here
+            const center = { lon: 6.13, lat: 49.61 }; // Example center coordinates
+            const radius = 100; // Example radius in meters
             const commentText = 'This is a map comment circle';
             createMapCommentCircle(center, radius, commentText);
-        };
+        });
 
-        toolbar.appendChild(button); // Füge den Button zur Toolbar hinzu
+        toolbar.appendChild(circle_btn);
     }
 
     // Wait for the WME to load and then add the button
     function waitForWME() {
-        if (document.querySelector('.toolbar')) { // Wähle ein passendes Toolbar-Element aus
-            addButtonToToolbar();
+        if (document.querySelector('.WazeControlPermalink')) {
+            addCircleButton();
         } else {
             setTimeout(waitForWME, 500);
         }
     }
 
-    waitForWME(); // Initialisierung der Funktion
-
+    waitForWME();
 })();
