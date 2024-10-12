@@ -2,14 +2,12 @@
 // @name         WME MC Circles
 // @description  Adds the possibility to create Map Comments in Waze Map Editor as a circle
 // @namespace    https://github.com/Dwinger2006/Dancingman81
-// @version      2024.10.13.03
+// @version      2024.10.13.04
 // @include      https://*.waze.com/editor*
 // @grant        none
 // @author       Dancingman81
 // @license      MIT
 // @syncURL      https://github.com/Dwinger2006/WME_MC-Circle/raw/main/wme_mc-circles.user.js
-// @downloadURL  https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.user.js
-// @updateURL    https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
 // ==/UserScript==
 
 (function() {
