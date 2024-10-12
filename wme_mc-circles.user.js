@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         WME MC Circles
-// @description  Adds the possibility to create Map Comments in Waze Map Editor as a circle
+// @name         WME Link to Geoportal Luxembourg and Traffic Info
+// @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
 // @namespace    https://github.com/Dwinger2006/Dancingman81
-// @version      2024.10.13.04
+// @version      2024.10.12.01
 // @include      https://*.waze.com/editor*
+// @include      https://*.waze.com/*editor*
 // @grant        none
 // @author       Dancingman81
 // @license      MIT
@@ -15,39 +16,31 @@
 (function() {
     'use strict';
 
-    let isDrawing = false;
-
-    // Log to check if the script is running
-    console.log('WME MC Circles script loaded');
-
-    // Create the circle drawing function
-    function drawCircle(center, radius) {
-        const circle = new OpenLayers.Geometry.Polygon.createRegularPolygon(
-            new OpenLayers.Geometry.Point(center.lon, center.lat),
-            radius,
-            40, // Sides to approximate a circle
-            0
-        );
-        return circle;
-    }
-
-    // Function to add Map Comment as Circle
-    function createMapCommentCircle(center, radius) {
-        const layer = W.map.getLayerByName('Map Comments');
+    // Function to create a map comment as a circle
+    function createMapCommentCircle(center, radius, commentText) {
+        const map = W.map;
+        const layer = map.getLayerByName('Map Comments');
         if (!layer) {
             console.error('Map Comments layer not found');
             return;
         }
 
-        const circleFeature = new OpenLayers.Feature.Vector(drawCircle(center, radius), {
-            comment: 'Circle Comment'
+        const circle = new OpenLayers.Geometry.Polygon.createRegularPolygon(
+            new OpenLayers.Geometry.Point(center.lon, center.lat),
+            radius,
+            40, // Number of sides for the circle approximation
+            0
+        );
+
+        const feature = new OpenLayers.Feature.Vector(circle, {
+            comment: commentText
         });
 
-        layer.addFeatures([circleFeature]);
+        layer.addFeatures([feature]);
     }
 
-    // Add the "Draw Circle" button
-    function addCircleButton() {
+    // Function to add a button to the WME toolbar
+    function addButtonToToolbar() {
         const toolbar = document.querySelector('.WazeControlPermalink');
         if (!toolbar) {
             console.error('Toolbar not found');
@@ -55,53 +48,26 @@
         }
 
         const button = document.createElement('button');
-        button.innerHTML = 'Draw Circle';
+        button.innerHTML = 'Add Circle';
         button.style.marginLeft = '10px';
-        button.onclick = startDrawingCircle;
+        button.onclick = function() {
+            const center = { lon: 6.13, lat: 49.61 }; // Center coordinates of the circle
+            const radius = 100; // Radius in meters
+            const commentText = 'This is a map comment circle';
+            createMapCommentCircle(center, radius, commentText);
+        };
 
         toolbar.appendChild(button);
     }
 
-    // Start drawing the circle by selecting the center
-    function startDrawingCircle() {
-        isDrawing = true;
-        W.map.events.register('click', W.map, onMapClick);
-    }
-
-    function onMapClick(event) {
-        if (!isDrawing) return;
-
-        const lonlat = W.map.getLonLatFromPixel(event.xy);
-        const center = { lon: lonlat.lon, lat: lonlat.lat };
-        const radius = 100; // Default radius
-        createMapCommentCircle(center, radius);
-
-        isDrawing = false;
-        W.map.events.unregister('click', W.map, onMapClick);
-    }
-
-    // Ensure toolbar is loaded before adding the button
-    function waitForToolbar() {
-        const toolbar = document.querySelector('.WazeControlPermalink');
-        if (toolbar) {
-            addCircleButton();
+    // Wait for the WME to load and then add the button
+    function waitForWME() {
+        if (document.querySelector('.WazeControlPermalink')) {
+            addButtonToToolbar();
         } else {
-            console.log("Toolbar not found, retrying...");
-            setTimeout(waitForToolbar, 1000); // Retry every second
+            setTimeout(waitForWME, 500);
         }
     }
 
-    // Initialize when WME is ready
-    function initialize() {
-        console.log('WME is initializing...');
-        if (typeof W !== 'undefined' && W.userscripts && W.userscripts.state.isReady) {
-            waitForToolbar(); // Ensure the toolbar is fully loaded
-        } else {
-            console.log("WME is not ready yet, retrying...");
-            document.addEventListener("wme-ready", initialize, { once: true });
-        }
-    }
-
-    initialize();
-
+    waitForWME();
 })();
