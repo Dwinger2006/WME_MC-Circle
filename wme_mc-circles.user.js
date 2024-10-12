@@ -9,9 +9,12 @@
 // @author       Dancingman81
 // @license      MIT
 // @syncURL      https://github.com/Dwinger2006/WME_MC-Circle/raw/main/wme_mc-circles.user.js
+//
+// ==/UserScript==
+
 // @downloadURL  https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.user.js
 // @updateURL    https://update.greasyfork.org/scripts/510495/WME%20Link%20to%20Geoportal%20Luxembourg%20and%20Traffic%20Info.meta.js
-// ==/UserScript==
+
 
 (function() {
     'use strict';
