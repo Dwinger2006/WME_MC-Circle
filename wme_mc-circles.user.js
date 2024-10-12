@@ -13,93 +13,79 @@
 (function() {
     'use strict';
 
-    let isDrawing = false;
+    let center = null;
+    let radius = null;
+    let circleLayer = null;
 
-    // Log to check if the script is running
-    console.log('WME MC Circles script loaded');
+    function initializeMyUserscript() {
+        console.log("WME MC Circle Initialized");
 
-    // Create the circle drawing function
+        // Add the button to the sidebar
+        const { tabLabel, tabPane } = W.userscripts.registerSidebarTab("mc-circle");
+        tabLabel.innerText = 'MC Circle';
+        tabLabel.title = 'Map Circle Creator';
+
+        tabPane.innerHTML = "<h2>Click on the map to set center, then click again to set radius.</h2>";
+
+        // Add event listeners for map clicks
+        W.map.events.register("click", W.map, onMapClick);
+    }
+
+    // Function to handle map clicks
+    function onMapClick(event) {
+        if (!center) {
+            // First click sets the center
+            center = event.xy;
+            console.log("Center set at:", center);
+        } else if (!radius) {
+            // Second click calculates the radius
+            const clickPosition = event.xy;
+            radius = calculateDistance(center, clickPosition);
+            console.log("Radius set at:", radius);
+
+            // Draw the circle
+            drawCircle(center, radius);
+        } else {
+            // Reset the process if both center and radius are already set
+            center = null;
+            radius = null;
+            console.log("Resetting center and radius.");
+        }
+    }
+
+    // Helper function to calculate distance between two points (center and click)
+    function calculateDistance(center, clickPosition) {
+        const dx = center.x - clickPosition.x;
+        const dy = center.y - clickPosition.y;
+        return Math.sqrt(dx * dx + dy * dy); // Pythagorean theorem
+    }
+
+    // Function to draw the circle on the map
     function drawCircle(center, radius) {
-        const circle = new OpenLayers.Geometry.Polygon.createRegularPolygon(
-            new OpenLayers.Geometry.Point(center.lon, center.lat),
+        const olCircle = new OpenLayers.Geometry.Polygon.createRegularPolygon(
+            new OpenLayers.Geometry.Point(center.x, center.y),
             radius,
-            40, // Sides to approximate a circle
+            40, // number of sides for the approximation of the circle
             0
         );
-        return circle;
-    }
+        const circleFeature = new OpenLayers.Feature.Vector(olCircle);
 
-    // Function to add Map Comment as Circle
-    function createMapCommentCircle(center, radius) {
-        const layer = W.map.getLayerByName('Map Comments');
-        if (!layer) {
-            console.error('Map Comments layer not found');
-            return;
+        if (!circleLayer) {
+            circleLayer = new OpenLayers.Layer.Vector("Circle Layer");
+            W.map.addLayer(circleLayer);
         }
 
-        const circleFeature = new OpenLayers.Feature.Vector(drawCircle(center, radius), {
-            comment: 'Circle Comment'
+        circleLayer.addFeatures([circleFeature]);
+        console.log("Circle drawn on the map.");
+    }
+
+    // Register to the WME initialization event
+    if (W?.userscripts?.state.isReady) {
+        initializeMyUserscript();
+    } else {
+        document.addEventListener("wme-ready", initializeMyUserscript, {
+            once: true
         });
-
-        layer.addFeatures([circleFeature]);
     }
-
-    // Add the "Draw Circle" button
-    function addCircleButton() {
-        const toolbar = document.querySelector('.WazeControlPermalink');
-        if (!toolbar) {
-            console.error('Toolbar not found');
-            return;
-        }
-
-        const button = document.createElement('button');
-        button.innerHTML = 'Draw Circle';
-        button.style.marginLeft = '10px';
-        button.onclick = startDrawingCircle;
-
-        toolbar.appendChild(button);
-    }
-
-    // Start drawing the circle by selecting the center
-    function startDrawingCircle() {
-        isDrawing = true;
-        W.map.events.register('click', W.map, onMapClick);
-    }
-
-    function onMapClick(event) {
-        if (!isDrawing) return;
-
-        const lonlat = W.map.getLonLatFromPixel(event.xy);
-        const center = { lon: lonlat.lon, lat: lonlat.lat };
-        const radius = 100; // Default radius
-        createMapCommentCircle(center, radius);
-
-        isDrawing = false;
-        W.map.events.unregister('click', W.map, onMapClick);
-    }
-
-    // Ensure toolbar is loaded before adding the button
-    function waitForToolbar() {
-        const toolbar = document.querySelector('.WazeControlPermalink');
-        if (toolbar) {
-            addCircleButton();
-        } else {
-            console.log("Toolbar not found, retrying...");
-            setTimeout(waitForToolbar, 1000); // Retry every second
-        }
-    }
-
-    // Initialize when WME is ready
-    function initialize() {
-        console.log('WME is initializing...');
-        if (typeof W !== 'undefined' && W.userscripts && W.userscripts.state.isReady) {
-            waitForToolbar(); // Ensure the toolbar is fully loaded
-        } else {
-            console.log("WME is not ready yet, retrying...");
-            document.addEventListener("wme-ready", initialize, { once: true });
-        }
-    }
-
-    initialize();
 
 })();
