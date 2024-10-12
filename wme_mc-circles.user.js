@@ -2,7 +2,7 @@
 // @name         WME MC Circles
 // @description  Adds the ability to create Map Comments in Waze Map Editor as circles
 // @namespace    https://github.com/Dwinger2006/Dancingman81
-// @version      2024.10.12.03
+// @version      2024.10.12.04
 // @include      https://*.waze.com/editor*
 // @include      https://*.waze.com/*editor*
 // @grant        none
@@ -15,87 +15,59 @@
 (function() {
     'use strict';
 
-    let centerPoint = null;
-    let tempCircleLayer = null;
-    let drawing = false;
-
-    // Create a temporary OpenLayers layer for drawing the circle
-    function createTempLayer() {
-        tempCircleLayer = new OpenLayers.Layer.Vector("Temp Circle Layer");
-        W.map.addLayer(tempCircleLayer);
-    }
-
-    // Function to start drawing the circle
-    function startDrawingCircle(event) {
-        if (!drawing) {
-            centerPoint = event.xy;  // Set the center point on the first click
-            drawing = true;
-            console.log("Center set: ", centerPoint);
-        } else {
-            // On the second click, calculate radius and draw the circle
-            const radius = calculateDistance(centerPoint, event.xy);
-            drawCircle(centerPoint, radius);
-            drawing = false;
+    // Function to create a map comment as a circle
+    function createMapCommentCircle(center, radius, commentText) {
+        const map = W.map;
+        const layer = map.getLayerByName('Map Comments');
+        if (!layer) {
+            console.error('Map Comments layer not found');
+            return;
         }
-    }
 
-    // Calculate distance between two points to determine the radius
-    function calculateDistance(center, point) {
-        const dx = center.x - point.x;
-        const dy = center.y - point.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    // Function to draw the circle as a map comment
-    function drawCircle(center, radius) {
-        const mapCenter = W.map.getLonLatFromViewPortPx(center);
         const circle = new OpenLayers.Geometry.Polygon.createRegularPolygon(
-            new OpenLayers.Geometry.Point(mapCenter.lon, mapCenter.lat),
+            new OpenLayers.Geometry.Point(center.lon, center.lat),
             radius,
-            40, // Number of sides for a circle approximation
+            40, // Number of sides for the circle approximation
             0
         );
 
         const feature = new OpenLayers.Feature.Vector(circle, {
-            comment: "Map Comment Circle"
+            comment: commentText
         });
 
-        const mapCommentLayer = W.map.getLayerByName("Map Comments");
-        if (mapCommentLayer) {
-            mapCommentLayer.addFeatures([feature]);
-            tempCircleLayer.destroy();  // Clear the temporary layer
-        } else {
-            console.error('Map Comments layer not found');
-        }
+        layer.addFeatures([feature]);
     }
 
-    // Function to add a button to the toolbar
-    function addCircleButton() {
-        const toolbar = document.querySelector('.WazeControlPermalink');
+    // Function to add a button to the WME toolbar
+    function addButtonToToolbar() {
+        const toolbar = document.querySelector('.toolbar'); // Suche nach einem element mit der Klasse 'toolbar'
         if (!toolbar) {
             console.error('Toolbar not found');
             return;
         }
 
         const button = document.createElement('button');
-        button.innerHTML = 'Draw Circle';
+        button.innerHTML = 'Add Circle';
         button.style.marginLeft = '10px';
         button.onclick = function() {
-            createTempLayer();
-            W.map.events.register('click', W.map, startDrawingCircle);
+            const center = { lon: 6.13, lat: 49.61 }; // Center coordinates of the circle
+            const radius = 100; // Radius in meters
+            const commentText = 'This is a map comment circle';
+            createMapCommentCircle(center, radius, commentText);
         };
 
-        toolbar.appendChild(button);
+        toolbar.appendChild(button); // Füge den Button zur Toolbar hinzu
     }
 
-    // Wait for WME to load and then add the button
+    // Wait for the WME to load and then add the button
     function waitForWME() {
-        if (document.querySelector('.WazeControlPermalink')) {
-            addCircleButton();
+        if (document.querySelector('.toolbar')) { // Wähle ein passendes Toolbar-Element aus
+            addButtonToToolbar();
         } else {
             setTimeout(waitForWME, 500);
         }
     }
 
-    waitForWME();
+    waitForWME(); // Initialisierung der Funktion
+
 })();
