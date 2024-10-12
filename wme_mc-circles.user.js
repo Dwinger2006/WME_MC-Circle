@@ -2,7 +2,7 @@
 // @name         WME MC Circles
 // @description  Adds the possibility to create Map Comments in Waze Map Editor as a circle
 // @namespace    https://github.com/Dwinger2006/Dancingman81
-// @version      2024.10.13.03
+// @version      2024.10.13.04
 // @include      https://*.waze.com/editor*
 // @grant        none
 // @author       Dancingman81
