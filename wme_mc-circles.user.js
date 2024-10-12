@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         WME Link to Geoportal Luxembourg and Traffic Info
-// @description  Adds buttons to Waze Map Editor to open the Geoportal of Luxembourg and the Luxembourg traffic info portal.
+// @name         WME MC Circles
+// @description  Adds posibility of Map Comment to Waze Map Editor as a circle
 // @namespace    https://github.com/Dwinger2006/Dancingman81
 // @version      2024.10.12.01
 // @include      https://*.waze.com/editor*
