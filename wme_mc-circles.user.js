@@ -16,8 +16,6 @@
     'use strict';
 
     let isDrawing = false;
-    let circleLayer;
-    let mapCommentLayer;
 
     // Log to check if the script is running
     console.log('WME MC Circles script loaded');
@@ -82,11 +80,22 @@
         W.map.events.unregister('click', W.map, onMapClick);
     }
 
+    // Ensure toolbar is loaded before adding the button
+    function waitForToolbar() {
+        const toolbar = document.querySelector('.WazeControlPermalink');
+        if (toolbar) {
+            addCircleButton();
+        } else {
+            console.log("Toolbar not found, retrying...");
+            setTimeout(waitForToolbar, 1000); // Retry every second
+        }
+    }
+
     // Initialize when WME is ready
     function initialize() {
         console.log('WME is initializing...');
         if (typeof W !== 'undefined' && W.userscripts && W.userscripts.state.isReady) {
-            addCircleButton();
+            waitForToolbar(); // Ensure the toolbar is fully loaded
         } else {
             console.log("WME is not ready yet, retrying...");
             document.addEventListener("wme-ready", initialize, { once: true });
